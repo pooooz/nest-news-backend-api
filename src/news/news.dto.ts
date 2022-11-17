@@ -16,3 +16,26 @@ export class CreateNewsDto {
   @ApiPropertyOptional()
   views: number;
 }
+
+export class UpdateNewsDto {
+  @IsString()
+  @IsOptional()
+  id?: string;
+
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  author?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsNumber()
+  @IsOptional()
+  @ApiPropertyOptional()
+  views?: number;
+}

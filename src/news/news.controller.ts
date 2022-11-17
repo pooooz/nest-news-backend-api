@@ -1,8 +1,16 @@
-import { Controller, Get, Param, Post, Body, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Delete,
+  Patch,
+  Query,
+} from '@nestjs/common';
 
 import { NewsService } from './news.service';
-import { CreateNewsDto } from './news.dto';
-import { BadRequestException } from './news.exception';
+import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 import { ApiResponse } from '@nestjs/swagger';
 
 import { BadRequestResponse } from './news.responses';
@@ -19,12 +27,7 @@ export class NewsController {
   @Get(':id')
   @ApiResponse(BadRequestResponse)
   getNewsById(@Param('id') id: string) {
-    const found = this.newsService.getById(id);
-    if (found) {
-      return found;
-    }
-
-    throw new BadRequestException();
+    return this.newsService.getById(id);
   }
 
   @Post()
@@ -32,15 +35,30 @@ export class NewsController {
     return this.newsService.create(newsItem);
   }
 
+  @Patch(':id')
+  @ApiResponse(BadRequestResponse)
+  updateNewsItemById(@Param('id') id: string, @Body() newsItem: UpdateNewsDto) {
+    return this.newsService.update(newsItem, id);
+  }
+
+  @Patch()
+  @ApiResponse(BadRequestResponse)
+  updateNewsItemByQueryParam(
+    @Query('id') id: string,
+    @Body() newsItem: UpdateNewsDto,
+  ) {
+    return this.newsService.update(newsItem, id);
+  }
+
+  @Patch()
+  @ApiResponse(BadRequestResponse)
+  updateNewsItem(@Param('id') id: string, @Body() newsItem: UpdateNewsDto) {
+    return this.newsService.update(newsItem, id);
+  }
+
   @Delete(':id')
   @ApiResponse(BadRequestResponse)
   deleteNewsById(@Param('id') id: string) {
-    const deleted = this.newsService.delete(id);
-
-    if (deleted) {
-      return deleted;
-    }
-
-    throw new BadRequestException();
+    return this.newsService.delete(id);
   }
 }
