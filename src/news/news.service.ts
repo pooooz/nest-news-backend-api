@@ -73,7 +73,7 @@ export class NewsService {
   delete(deleteId: NewsEntity['id']) {
     const removeIdx = this.news.findIndex(({ id }) => id === deleteId);
 
-    if (!removeIdx) throw new BadRequestException('badId');
+    if (removeIdx < 0) throw new BadRequestException('badId');
 
     const deleted = this.news[removeIdx];
 
