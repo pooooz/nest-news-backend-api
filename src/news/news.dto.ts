@@ -11,6 +11,9 @@ export class CreateNewsDto {
   @IsString()
   description: string;
 
+  @IsString()
+  coverSrc: string;
+
   @IsNumber()
   @IsOptional()
   @ApiPropertyOptional()
@@ -33,6 +36,10 @@ export class UpdateNewsDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  coverSrc?: string;
 
   @IsNumber()
   @IsOptional()

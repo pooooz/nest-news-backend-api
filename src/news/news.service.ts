@@ -1,62 +1,63 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { NewsEntity } from './news.interfaces';
+import { NewsData } from './news.interfaces';
 import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 import { BadRequestException } from './news.exception';
 
 @Injectable()
 export class NewsService {
-  private readonly news: Array<NewsEntity> = [
-    {
+  private readonly news: NewsData = {
+    1: {
       id: '1',
       title: 'Initial',
       author: 'Poz',
       description: 'Initial new',
+      coverSrc:
+        'https://i.pinimg.com/736x/f4/d2/96/f4d2961b652880be432fb9580891ed62.jpg',
       views: 48,
     },
-  ];
+  };
 
   getAll() {
     return this.news;
   }
 
-  getById(searchId: NewsEntity['id']) {
-    const found = this.news.find(({ id }) => id === searchId);
-    if (!found) throw new BadRequestException('badId');
+  getById(newsId: string) {
+    const attempt = this.news[newsId];
 
-    return found;
+    if (!attempt) throw new BadRequestException('badId');
+
+    return attempt;
   }
 
   create(newsItem: CreateNewsDto) {
+    const newsId = uuidv4();
+
     const dataItem = {
       ...newsItem,
-      id: uuidv4(),
+      id: newsId,
     };
 
-    this.news.push(dataItem);
+    this.news[newsId] = dataItem;
 
     return dataItem;
   }
 
-  update(updateProps: UpdateNewsDto, updateId?: NewsEntity['id']) {
+  update(updateProps: UpdateNewsDto, updateId?: string) {
     if (!updateId && Object.keys(updateProps).indexOf('id') < 0)
       throw new BadRequestException('noId');
 
     const updateUtil = (idToUpdate: string) => {
-      const newsItemToUpdateIdx = this.news.findIndex(
-        ({ id }) => id === idToUpdate,
-      );
+      const attempt = this.news[idToUpdate];
 
-      if (newsItemToUpdateIdx > -1) {
-        const outdated = this.news[newsItemToUpdateIdx];
-
+      if (attempt) {
         const updated = {
-          ...outdated,
+          ...attempt,
           ...updateProps,
         };
 
-        this.news[newsItemToUpdateIdx] = updated;
+        this.news[idToUpdate] = updated;
 
         return updated;
       }
@@ -66,18 +67,15 @@ export class NewsService {
 
     if (updateId) return updateUtil(updateId);
     if (updateProps.id) return updateUtil(updateProps.id);
-
-    throw new BadRequestException('badId');
   }
 
-  delete(deleteId: NewsEntity['id']) {
-    const removeIdx = this.news.findIndex(({ id }) => id === deleteId);
+  delete(deleteId: string) {
+    const attempt = this.news[deleteId];
 
-    if (removeIdx < 0) throw new BadRequestException('badId');
+    if (!attempt) throw new BadRequestException('badId');
 
-    const deleted = this.news[removeIdx];
+    delete this.news[deleteId];
 
-    this.news.splice(removeIdx, 1);
-    return deleted;
+    return attempt;
   }
 }
