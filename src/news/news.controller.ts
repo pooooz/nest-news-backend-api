@@ -7,17 +7,25 @@ import {
   Delete,
   Patch,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { ApiResponse } from '@nestjs/swagger';
 
 import { NewsService } from './news.service';
 import { CreateNewsDto, UpdateNewsDto } from './news.dto';
-import { ApiResponse } from '@nestjs/swagger';
 
 import { BadRequestResponse } from './news.responses';
 import { CommentsService } from '../comments/comments.service';
 import { renderNewsList } from '../views/news/news.all';
 import { renderTemplate } from '../views/template';
 import { renderNewsItemDetailed } from '../views/news/news.detailed';
+import { FileLoadHelper } from '../utils/fileLoadHelper';
+
+const NEWS_PATH = '/static/';
+FileLoadHelper.path = NEWS_PATH;
 
 @Controller('news')
 export class NewsController {
@@ -64,7 +72,21 @@ export class NewsController {
   }
 
   @Post()
-  createNewsItem(@Body() newsItem: CreateNewsDto) {
+  @UseInterceptors(
+    FileInterceptor('cover', {
+      storage: diskStorage({
+        destination: FileLoadHelper.destinationPath,
+        filename: FileLoadHelper.uniqueFileName,
+      }),
+    }),
+  )
+  createNewsItem(
+    @Body() newsItem: CreateNewsDto,
+    @UploadedFile() cover: Express.Multer.File,
+  ) {
+    if (cover?.filename) {
+      newsItem.coverSrc = `${NEWS_PATH}${cover.filename}`;
+    }
     return this.newsService.create(newsItem);
   }
 
