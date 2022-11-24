@@ -8,7 +8,15 @@ import { CreateCommentDto, UpdateCommentDto } from './comments.dto';
 @Injectable()
 export class CommentsService {
   private readonly comments: CommentsData = {
-    1: [{ id: '1', author: 'Poz', text: 'New comment' }],
+    1: [
+      {
+        id: '1',
+        author: 'Poz',
+        text: 'New comment',
+        avatar:
+          'https://i.pinimg.com/550x/83/d3/36/83d336bea6c487be42c146f095acc28f.jpg',
+      },
+    ],
   };
 
   getById(newsId: string) {
@@ -17,16 +25,25 @@ export class CommentsService {
     return attempt || [];
   }
 
-  create(newsId: string, comment: CreateCommentDto) {
+  create(
+    newsId: string,
+    comment: CreateCommentDto,
+    avatar: string | undefined,
+  ) {
     const attempt = this.comments[newsId];
 
     if (!attempt) {
       this.comments[newsId] = [];
     }
 
+    const avatarSrc =
+      avatar ||
+      'https://i.pinimg.com/550x/83/d3/36/83d336bea6c487be42c146f095acc28f.jpg';
     const newCommentId = uuidv4();
+
     const newComment = {
       id: newCommentId,
+      avatar: avatarSrc,
       ...comment,
     };
 
