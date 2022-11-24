@@ -13,15 +13,11 @@ export class CommentsService {
 
   getById(newsId: string) {
     const attempt = this.comments[newsId];
-    if (attempt) {
-      return attempt;
-    }
 
-    throw new BadRequestException('badNewsId');
+    return attempt || [];
   }
 
   create(newsId: string, comment: CreateCommentDto) {
-    console.log(comment);
     const attempt = this.comments[newsId];
 
     if (!attempt) {

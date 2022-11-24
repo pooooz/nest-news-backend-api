@@ -5,10 +5,6 @@ const publicPath = './public';
 const path = publicPath;
 
 export class FileLoadHelper {
-  static set path(path: string) {
-    path = publicPath + path;
-  }
-
   public static uniqueFileName(
     req: Request,
     file: Express.Multer.File,

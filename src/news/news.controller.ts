@@ -23,9 +23,7 @@ import { renderNewsList } from '../views/news/news.all';
 import { renderTemplate } from '../views/template';
 import { renderNewsItemDetailed } from '../views/news/news.detailed';
 import { FileLoadHelper } from '../utils/fileLoadHelper';
-
-const NEWS_PATH = '/static/';
-FileLoadHelper.path = NEWS_PATH;
+import { renderNewsForm } from '../views/news/news.form';
 
 @Controller('news')
 export class NewsController {
@@ -42,7 +40,7 @@ export class NewsController {
   @Get('/all')
   getAllNewsView() {
     const news = this.newsService.getAll();
-    const content = renderNewsList(news);
+    const content = `${renderNewsList(news)} ${renderNewsForm()}`;
 
     return renderTemplate(content, {
       title: 'News',
@@ -56,7 +54,12 @@ export class NewsController {
     const news = this.newsService.getById(id);
     const comments = this.commentsService.getById(id);
 
-    return renderNewsItemDetailed(news, comments);
+    const content = renderNewsItemDetailed(news, comments, id);
+
+    return renderTemplate(content, {
+      title: news.title,
+      description: 'Detailed',
+    });
   }
 
   @Get(':id')
@@ -84,10 +87,12 @@ export class NewsController {
     @Body() newsItem: CreateNewsDto,
     @UploadedFile() cover: Express.Multer.File,
   ) {
+    let coverSrc = newsItem.coverSrc;
     if (cover?.filename) {
-      newsItem.coverSrc = `${NEWS_PATH}${cover.filename}`;
+      coverSrc = `/${cover.filename}`;
     }
-    return this.newsService.create(newsItem);
+
+    return this.newsService.create(newsItem, coverSrc);
   }
 
   @Patch(':id')

@@ -4,6 +4,7 @@ import { NewsEntity } from '../../news/news.interfaces';
 export const renderNewsItemDetailed = (
   news: NewsEntity,
   comments: Array<CommentEntity>,
+  newsId: string,
 ) => {
   return `
     <div class="p-4 p-md-5 mb-4 rounded text-bg-dark">
@@ -17,6 +18,7 @@ export const renderNewsItemDetailed = (
     <div>
         ${renderCommentsList(comments)}
     </div>
+    ${renderCommentForm(newsId)}
     `;
 };
 
@@ -33,6 +35,26 @@ export const renderCommentsList = (comments: Array<CommentEntity>): string => {
         ${commentsListHtml}
     </ol>
     `;
+};
+
+export const renderCommentForm = (newsId: string) => {
+  return `
+    <form action="/comments/${newsId}" method="post" enctype="multipart/form-data" class="p-4">
+        <div class="form-group">
+            <label for="author">Author</label>
+            <input name="author" type="text" class="form-control" id="author" placeholder="Enter your name" />
+        </div>
+        <div class="form-group">
+            <label for="cover">Cover file</label>
+            <input name="cover" type="file" class="form-control" id="cover" placeholder="Description" />
+        </div>
+        <div class="form-group">
+            <label for="text">Text</label>
+            <textarea name="text" class="form-control" id="text" placeholder="Comment"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
+  `;
 };
 
 export const renderComment = (comment: CommentEntity) => {

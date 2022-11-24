@@ -31,11 +31,16 @@ export class NewsService {
     return attempt;
   }
 
-  create(newsItem: CreateNewsDto) {
+  create(newsItem: CreateNewsDto, coverSrc: string | undefined) {
+    if (!coverSrc) {
+      throw new BadRequestException('noCover');
+    }
+
     const newsId = uuidv4();
 
     const dataItem = {
       ...newsItem,
+      coverSrc,
       id: newsId,
     };
 
