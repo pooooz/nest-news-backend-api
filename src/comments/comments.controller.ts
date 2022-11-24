@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  Patch,
+} from '@nestjs/common';
 
 import { CommentsService } from './comments.service';
-import { CreateCommentDto } from './comments.dto';
+import { CreateCommentDto, UpdateCommentDto } from './comments.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { BadRequestResponse } from './comments.responses';
 
@@ -30,5 +38,15 @@ export class CommentsController {
     @Param('commentId') commentId: string,
   ) {
     return this.commentsService.delete(newsId, commentId);
+  }
+
+  @Patch('/:newsId/:commentId')
+  @ApiResponse(BadRequestResponse)
+  changeComment(
+    @Param('newsId') newsId: string,
+    @Param('commentId') commentId: string,
+    @Body() commentItem: UpdateCommentDto,
+  ) {
+    return this.commentsService.update(newsId, commentId, commentItem);
   }
 }
