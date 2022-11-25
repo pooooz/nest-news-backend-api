@@ -6,12 +6,17 @@ import {
   Param,
   Body,
   Patch,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 
 import { CommentsService } from './comments.service';
 import { CreateCommentDto, UpdateCommentDto } from './comments.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { BadRequestResponse } from './comments.responses';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { FileLoadHelper } from '../utils/fileLoadHelper';
 
 @Controller('comments')
 export class CommentsController {
@@ -24,11 +29,25 @@ export class CommentsController {
   }
 
   @Post('/:newsId')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: FileLoadHelper.destinationPath,
+        filename: FileLoadHelper.uniqueFileName,
+      }),
+    }),
+  )
   createComment(
     @Param('newsId') newsId: string,
     @Body() comment: CreateCommentDto,
+    @UploadedFile() avatar: Express.Multer.File,
   ) {
-    return this.commentsService.create(newsId, comment);
+    let avatarSrc = comment.avatar;
+    if (avatar?.filename) {
+      avatarSrc = `/${avatar.filename}`;
+    }
+
+    return this.commentsService.create(newsId, comment, avatarSrc);
   }
 
   @Delete('/:newsId/:commentId')

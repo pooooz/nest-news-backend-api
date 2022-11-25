@@ -4,6 +4,7 @@ import { NewsEntity } from '../../news/news.interfaces';
 export const renderNewsItemDetailed = (
   news: NewsEntity,
   comments: Array<CommentEntity>,
+  newsId: string,
 ) => {
   return `
     <div class="p-4 p-md-5 mb-4 rounded text-bg-dark">
@@ -17,6 +18,7 @@ export const renderNewsItemDetailed = (
     <div>
         ${renderCommentsList(comments)}
     </div>
+    ${renderCommentForm(newsId)}
     `;
 };
 
@@ -35,9 +37,30 @@ export const renderCommentsList = (comments: Array<CommentEntity>): string => {
     `;
 };
 
+export const renderCommentForm = (newsId: string) => {
+  return `
+    <form action="/comments/${newsId}" method="post" enctype="multipart/form-data" class="p-4">
+        <div class="form-group">
+            <label for="author">Author</label>
+            <input name="author" type="text" class="form-control" id="author" placeholder="Enter your name" />
+        </div>
+        <div class="form-group">
+            <label for="text">Text</label>
+            <textarea name="text" class="form-control" id="text" placeholder="Comment"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="avatar">Avatar</label>
+            <input name="avatar" type="file" class="form-control" id="avatar" placeholder="Avatar" />
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
+  `;
+};
+
 export const renderComment = (comment: CommentEntity) => {
   return `
     <li class="list-group-item d-flex justify-content-between align-items-start mb-2">
+        <img src=${comment.avatar} class="card-img-top" alt="cat" style="width: 64px; height: 64px; object-fit: contain" />
         <div class="ms-2 me-auto">
             <div class="fw-bold bold">${comment.author}</div>
             ${comment.text}

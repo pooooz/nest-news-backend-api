@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateNewsDto {
   @IsString()
@@ -15,12 +14,11 @@ export class CreateNewsDto {
   description: string;
 
   @IsString()
-  @IsNotEmpty()
-  coverSrc: string;
+  @IsOptional()
+  coverSrc?: string;
 
   @IsNumber()
   @IsOptional()
-  @ApiPropertyOptional()
   views: number;
 }
 

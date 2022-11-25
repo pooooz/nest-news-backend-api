@@ -13,6 +13,10 @@ export class CreateCommentDto {
     example: 'My comment',
   })
   text: string;
+
+  @IsString()
+  @IsOptional()
+  avatar?: string;
 }
 
 export class UpdateCommentDto {
