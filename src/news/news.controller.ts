@@ -20,8 +20,6 @@ import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 
 import { BadRequestResponse } from './news.responses';
 import { CommentsService } from '../comments/comments.service';
-import { renderTemplate } from '../views/template';
-import { renderNewsItemDetailed } from '../views/news/news.detailed';
 import { FileLoadHelper } from '../utils/fileLoadHelper';
 
 @Controller('news')
@@ -54,19 +52,11 @@ export class NewsController {
     const news = this.newsService.getById(id);
     const comments = this.commentsService.getById(id);
 
-    console.log(comments);
-
-    const content = renderNewsItemDetailed(news, comments, id);
     return {
       title: news.title,
       comments,
       news,
     };
-
-    return renderTemplate(content, {
-      title: news.title,
-      description: 'Detailed',
-    });
   }
 
   @Get(':id')
