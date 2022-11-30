@@ -1,0 +1,20 @@
+{{#if news}}
+  <div class="row">
+    {{#each news}}
+      <li class="col-lg-4 mb-2">
+        <div class="card">
+          <img src="{{this.title}}" class="card-img-top" alt="cat" style="height: 200px; object-fit: cover" />
+          <div class="card-body">
+            <a href="/news/{{this}}/detail">
+              <h5 class="card-title">{{this.title}}</h5>
+            </a>
+            <h6 class="card-subtitle mb-2 text-muted">{{news.author}}</h6>
+            <p class="card-text">{{this.description}}</p>
+          </div>
+        </div>
+      </li>
+    {{/each}}
+  </div>
+{{else}}
+  <h1>Список новостей пуст!</h1>
+{{/if}}
