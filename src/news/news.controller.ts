@@ -13,17 +13,14 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { ApiResponse } from '@nestjs/swagger';
+import { Render } from '@nestjs/common';
 
 import { NewsService } from './news.service';
 import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 
 import { BadRequestResponse } from './news.responses';
 import { CommentsService } from '../comments/comments.service';
-import { renderNewsList } from '../views/news/news.all';
-import { renderTemplate } from '../views/template';
-import { renderNewsItemDetailed } from '../views/news/news.detailed';
 import { FileLoadHelper } from '../utils/fileLoadHelper';
-import { renderNewsForm } from '../views/news/news.form';
 
 @Controller('news')
 export class NewsController {
@@ -38,28 +35,28 @@ export class NewsController {
   }
 
   @Get('/all')
+  @Render('news-list')
   getAllNewsView() {
     const news = this.newsService.getAll();
-    const content = `${renderNewsList(news)} ${renderNewsForm()}`;
 
-    return renderTemplate(content, {
-      title: 'News',
-      description: 'News list',
-    });
+    return {
+      title: 'All news',
+      news,
+    };
   }
 
   @Get(':id/detail')
+  @Render('news-detailed')
   @ApiResponse(BadRequestResponse)
   getNewsViewById(@Param('id') id: string) {
     const news = this.newsService.getById(id);
     const comments = this.commentsService.getById(id);
 
-    const content = renderNewsItemDetailed(news, comments, id);
-
-    return renderTemplate(content, {
+    return {
       title: news.title,
-      description: 'Detailed',
-    });
+      comments,
+      news,
+    };
   }
 
   @Get(':id')
