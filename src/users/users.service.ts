@@ -14,8 +14,16 @@ export class UsersService {
 
   async create(user: CrateUserDto) {
     const userEntity = new UsersEntity();
-    userEntity.username = user.username;
+    userEntity.name = user.name;
     userEntity.email = user.email;
     return await this.usersRepository.save(userEntity);
+  }
+
+  async findById(id: number) {
+    return await this.usersRepository.findOneBy({ id });
+  }
+
+  async findByEmail(email: string) {
+    return await this.usersRepository.findOneBy({ email });
   }
 }

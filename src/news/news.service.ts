@@ -2,27 +2,30 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreateNewsDto, UpdateNewsDto } from './news.dto';
-import { BadRequestException } from './news.exception';
+import { CreateNewsDto } from './news.dto';
 
 import { NewsEntity } from './news.entity';
-import { UsersEntity } from '../users/users.entity';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class NewsService {
   constructor(
     @InjectRepository(NewsEntity)
     private readonly newsRepository: Repository<NewsEntity>,
-    @InjectRepository(UsersEntity)
-    private readonly usersEntity: Repository<UsersEntity>,
+    private readonly usersService: UsersService,
   ) {}
 
   async findAll() {
-    return await this.newsRepository.find({});
+    return await this.newsRepository.find({ relations: ['user'] });
   }
 
   async findById(id: number) {
-    return await this.newsRepository.findOneBy({ id });
+    return await this.newsRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ['user'],
+    });
   }
 
   async create(newsItem: CreateNewsDto, coverSrc: string) {
@@ -31,9 +34,7 @@ export class NewsService {
     newNews.cover = coverSrc;
     newNews.description = newsItem.description;
 
-    const user = await this.usersEntity.findOneBy({
-      email: newsItem.authorEmail,
-    });
+    const user = await this.usersService.findByEmail(newsItem.authorEmail);
     if (!user) {
       throw new HttpException('Bad user id', 400);
     }
