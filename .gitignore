@@ -5,6 +5,9 @@
 # static
 /public
 
+# secrets
+.env
+
 # Logs
 logs
 *.log

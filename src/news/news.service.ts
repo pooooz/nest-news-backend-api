@@ -1,22 +1,30 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreateNewsDto } from './news.dto';
+import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 
 import { NewsEntity } from './news.entity';
 import { UsersService } from '../users/users.service';
+import { CommentsService } from '../comments/comments.service';
+import { BadRequestException } from './news.exception';
 
 @Injectable()
 export class NewsService {
   constructor(
     @InjectRepository(NewsEntity)
     private readonly newsRepository: Repository<NewsEntity>,
+
     private readonly usersService: UsersService,
+
+    @Inject(forwardRef(() => CommentsService))
+    private readonly commentsService: CommentsService,
   ) {}
 
   async findAll() {
-    return await this.newsRepository.find({ relations: ['user'] });
+    return await this.newsRepository.find({
+      relations: ['user', 'comments', 'comments.user'],
+    });
   }
 
   async findById(id: number) {
@@ -24,7 +32,7 @@ export class NewsService {
       where: {
         id,
       },
-      relations: ['user'],
+      relations: ['user', 'comments', 'comments.user'],
     });
   }
 
@@ -34,9 +42,11 @@ export class NewsService {
     newNews.cover = coverSrc;
     newNews.description = newsItem.description;
 
+    newNews.comments = [];
+
     const user = await this.usersService.findByEmail(newsItem.authorEmail);
     if (!user) {
-      throw new HttpException('Bad user id', 400);
+      throw new HttpException('Bad user email', 400);
     }
 
     newNews.user = user;
@@ -44,38 +54,44 @@ export class NewsService {
     return await this.newsRepository.save(newNews);
   }
 
-  /*update(updateProps: UpdateNewsDto, updateId?: string) {
-    if (!updateId && Object.keys(updateProps).indexOf('id') < 0)
-      throw new BadRequestException('noId');
+  async update(updateProps: UpdateNewsDto, updateId?: string) {
+    const updateUtil = async (idToUpdate: string) => {
+      const paramsToUpdate = {
+        cover: updateProps.cover,
+        description: updateProps.description,
+        title: updateProps.title,
+      };
 
-    const updateUtil = (idToUpdate: string) => {
-      const attempt = this.news[idToUpdate];
-
-      if (attempt) {
-        const updated = {
-          ...attempt,
-          ...updateProps,
-        };
-
-        this.news[idToUpdate] = updated;
-
-        return updated;
-      }
-
-      throw new BadRequestException('badId');
+      return await this.newsRepository.update(idToUpdate, {
+        ...paramsToUpdate,
+      });
     };
 
-    if (updateId) return updateUtil(updateId);
-    if (updateProps.id) return updateUtil(updateProps.id);
-  }*/
+    if (!updateId && updateProps.id) {
+      return updateUtil(updateProps.id);
+    }
 
-  /*delete(deleteId: string) {
-    const attempt = this.news[deleteId];
+    if (updateId && !updateProps.id) {
+      return updateUtil(updateId);
+    }
+  }
 
-    if (!attempt) throw new BadRequestException('badId');
+  async delete(deleteId: number) {
+    const news = await this.newsRepository.findOne({
+      where: { id: deleteId },
+      relations: ['comments'],
+    });
 
-    delete this.news[deleteId];
+    if (!news) {
+      throw new BadRequestException('badCommentId');
+    }
 
-    return attempt;
-  }*/
+    const promiseArray = news.comments.map(({ id }) =>
+      this.commentsService.delete(id),
+    );
+
+    await Promise.all(promiseArray);
+
+    return this.newsRepository.delete(deleteId);
+  }
 }

@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 
 import { UsersEntity } from '../users/users.entity';
+import { NewsEntity } from '../news/news.entity';
 
 @Entity('comments')
 export class CommentsEntity {
@@ -15,10 +16,13 @@ export class CommentsEntity {
   id: number;
 
   @Column('text')
-  message: string;
+  text: string;
 
   @ManyToOne(() => UsersEntity, (user) => user.comments)
   user: UsersEntity;
+
+  @ManyToOne(() => NewsEntity, (news) => news.comments)
+  news: NewsEntity;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

@@ -5,7 +5,7 @@ export class CreateCommentDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  author: string;
+  authorEmail: string;
 
   @IsString()
   @IsNotEmpty()

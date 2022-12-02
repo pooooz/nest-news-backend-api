@@ -1,10 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { NewsController } from './news.controller';
 import { NewsService } from './news.service';
 import { CommentsModule } from '../comments/comments.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NewsEntity } from './news.entity';
-import { UsersEntity } from '../users/users.entity';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -12,8 +11,9 @@ import { UsersModule } from '../users/users.module';
   providers: [NewsService],
   imports: [
     TypeOrmModule.forFeature([NewsEntity]),
-    CommentsModule,
+    forwardRef(() => CommentsModule),
     UsersModule,
   ],
+  exports: [TypeOrmModule.forFeature([NewsEntity]), NewsService],
 })
 export class NewsModule {}

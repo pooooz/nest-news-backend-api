@@ -20,6 +20,9 @@ export class UsersEntity {
   @Column('text', { unique: true })
   email: string;
 
+  @Column('text', { nullable: true })
+  avatar: string;
+
   @OneToMany(() => NewsEntity, (news) => news.user)
   news: NewsEntity[];
 

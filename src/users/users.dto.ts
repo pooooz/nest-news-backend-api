@@ -1,10 +1,14 @@
-import { IsNotEmpty, IsString, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsOptional } from 'class-validator';
 export class CrateUserDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @IsNotEmpty()
   @IsEmail()
+  @IsNotEmpty()
   email: string;
+
+  @IsString()
+  @IsOptional()
+  avatar?: string;
 }

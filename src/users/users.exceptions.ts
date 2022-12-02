@@ -1,11 +1,9 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-type Reasons = 'badNewsId' | 'badCommentId' | 'badUserEmail';
+type Reasons = 'noAvatar';
 
 const errorMessages = new Map<Reasons, string>([
-  ['badNewsId', 'News with passed ID not found'],
-  ['badCommentId', 'Comment with passed ID not found'],
-  ['badUserEmail', 'User with passed email not found'],
+  ['noAvatar', 'The request must contain a file or a link to the avatar art'],
 ]);
 
 export class BadRequestException extends HttpException {

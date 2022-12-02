@@ -12,10 +12,11 @@ export class UsersService {
     private readonly usersRepository: Repository<UsersEntity>,
   ) {}
 
-  async create(user: CrateUserDto) {
+  async create(user: CrateUserDto, avatarSrc: string) {
     const userEntity = new UsersEntity();
     userEntity.name = user.name;
     userEntity.email = user.email;
+    userEntity.avatar = avatarSrc;
     return await this.usersRepository.save(userEntity);
   }
 
