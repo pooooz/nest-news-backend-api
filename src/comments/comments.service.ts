@@ -4,6 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { CommentsData } from './comments.interfaces';
 import { BadRequestException } from './comments.exceptions';
 import { CreateCommentDto, UpdateCommentDto } from './comments.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { NewsEntity } from '../news/news.entity';
+import { Repository } from 'typeorm';
+import { CommentsEntity } from './comments.entity';
 
 @Injectable()
 export class CommentsService {
@@ -18,6 +22,11 @@ export class CommentsService {
       },
     ],
   };
+
+  constructor(
+    @InjectRepository(CommentsEntity)
+    private readonly newsRepository: Repository<CommentsEntity>,
+  ) {}
 
   getById(newsId: string) {
     const attempt = this.comments[newsId];

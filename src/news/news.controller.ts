@@ -21,6 +21,8 @@ import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 import { BadRequestResponse } from './news.responses';
 import { CommentsService } from '../comments/comments.service';
 import { FileLoadHelper } from '../utils/fileLoadHelper';
+import { BadRequestException } from './news.exception';
+import { NewsEntity } from './news.entity';
 
 @Controller('news')
 export class NewsController {
@@ -30,14 +32,14 @@ export class NewsController {
   ) {}
 
   @Get()
-  getAllNews() {
-    return this.newsService.getAll();
+  async getAllNews() {
+    return this.newsService.findAll();
   }
 
   @Get('/all')
   @Render('news-list')
-  getAllNewsView() {
-    const news = this.newsService.getAll();
+  async getAllNewsView() {
+    const news = this.newsService.findAll();
 
     return {
       title: 'All news',
@@ -48,26 +50,30 @@ export class NewsController {
   @Get(':id/detail')
   @Render('news-detailed')
   @ApiResponse(BadRequestResponse)
-  getNewsViewById(@Param('id') id: string) {
-    const news = this.newsService.getById(id);
-    const comments = this.commentsService.getById(id);
+  async getNewsViewById(@Param('id') id: number) {
+    const news = await this.newsService.findById(id);
+
+    if (!news) {
+      throw new BadRequestException('badId');
+    }
 
     return {
       title: news.title,
-      comments,
       news,
     };
   }
 
   @Get(':id')
   @ApiResponse(BadRequestResponse)
-  getNewsById(@Param('id') id: string) {
-    const news = this.newsService.getById(id);
-    const comments = this.commentsService.getById(id);
+  async getNewsById(@Param('id') id: number) {
+    const news = await this.newsService.findById(id);
+
+    if (!news) {
+      throw new BadRequestException('badId');
+    }
 
     return {
       ...news,
-      comments,
     };
   }
 
@@ -85,37 +91,42 @@ export class NewsController {
     @UploadedFile() cover: Express.Multer.File,
   ) {
     let coverSrc = newsItem.coverSrc;
+    console.log(newsItem);
     if (cover?.filename) {
       coverSrc = `/${cover.filename}`;
+    }
+
+    if (!coverSrc) {
+      throw new BadRequestException('noCover');
     }
 
     return this.newsService.create(newsItem, coverSrc);
   }
 
-  @Patch(':id')
+  /*@Patch(':id')
   @ApiResponse(BadRequestResponse)
   updateNewsItemById(@Param('id') id: string, @Body() newsItem: UpdateNewsDto) {
     return this.newsService.update(newsItem, id);
-  }
+  }*/
 
-  @Patch()
+  /*@Patch()
   @ApiResponse(BadRequestResponse)
   updateNewsItemByQueryParam(
     @Query('id') id: string,
     @Body() newsItem: UpdateNewsDto,
   ) {
     return this.newsService.update(newsItem, id);
-  }
+  }*/
 
-  @Patch()
+  /*@Patch()
   @ApiResponse(BadRequestResponse)
   updateNewsItem(@Param('id') id: string, @Body() newsItem: UpdateNewsDto) {
     return this.newsService.update(newsItem, id);
-  }
+  }*/
 
-  @Delete(':id')
+  /*@Delete(':id')
   @ApiResponse(BadRequestResponse)
   deleteNewsById(@Param('id') id: string) {
     return this.newsService.delete(id);
-  }
+  }*/
 }

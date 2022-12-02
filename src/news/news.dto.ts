@@ -7,7 +7,7 @@ export class CreateNewsDto {
 
   @IsString()
   @IsNotEmpty()
-  author: string;
+  authorEmail: string;
 
   @IsString()
   @IsNotEmpty()
@@ -16,10 +16,6 @@ export class CreateNewsDto {
   @IsString()
   @IsOptional()
   coverSrc?: string;
-
-  @IsNumber()
-  @IsOptional()
-  views: number;
 }
 
 export class UpdateNewsDto {
@@ -36,19 +32,10 @@ export class UpdateNewsDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  author?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
   description?: string;
 
   @IsString()
   @IsNotEmpty()
   @IsOptional()
   coverSrc?: string;
-
-  @IsNumber()
-  @IsOptional()
-  views?: number;
 }

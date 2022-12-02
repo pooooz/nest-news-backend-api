@@ -1,55 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { HttpException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { NewsData } from './news.interfaces';
 import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 import { BadRequestException } from './news.exception';
 
+import { NewsEntity } from './news.entity';
+import { UsersEntity } from '../users/users.entity';
+
 @Injectable()
 export class NewsService {
-  private readonly news: NewsData = {
-    1: {
-      id: '1',
-      title: 'Initial',
-      author: 'Poz',
-      description: 'Initial new',
-      coverSrc:
-        'https://i.pinimg.com/736x/f4/d2/96/f4d2961b652880be432fb9580891ed62.jpg',
-      views: 48,
-    },
-  };
+  constructor(
+    @InjectRepository(NewsEntity)
+    private readonly newsRepository: Repository<NewsEntity>,
+    @InjectRepository(UsersEntity)
+    private readonly usersEntity: Repository<UsersEntity>,
+  ) {}
 
-  getAll() {
-    return this.news;
+  async findAll() {
+    return await this.newsRepository.find({});
   }
 
-  getById(newsId: string) {
-    const attempt = this.news[newsId];
-
-    if (!attempt) throw new BadRequestException('badId');
-
-    return attempt;
+  async findById(id: number) {
+    return await this.newsRepository.findOneBy({ id });
   }
 
-  create(newsItem: CreateNewsDto, coverSrc: string | undefined) {
-    if (!coverSrc) {
-      throw new BadRequestException('noCover');
+  async create(newsItem: CreateNewsDto, coverSrc: string) {
+    const newNews = new NewsEntity();
+    newNews.title = newsItem.title;
+    newNews.cover = coverSrc;
+    newNews.description = newsItem.description;
+
+    const user = await this.usersEntity.findOneBy({
+      email: newsItem.authorEmail,
+    });
+    if (!user) {
+      throw new HttpException('Bad user id', 400);
     }
 
-    const newsId = uuidv4();
+    newNews.user = user;
 
-    const dataItem = {
-      ...newsItem,
-      coverSrc,
-      id: newsId,
-    };
-
-    this.news[newsId] = dataItem;
-
-    return dataItem;
+    return await this.newsRepository.save(newNews);
   }
 
-  update(updateProps: UpdateNewsDto, updateId?: string) {
+  /*update(updateProps: UpdateNewsDto, updateId?: string) {
     if (!updateId && Object.keys(updateProps).indexOf('id') < 0)
       throw new BadRequestException('noId');
 
@@ -72,9 +66,9 @@ export class NewsService {
 
     if (updateId) return updateUtil(updateId);
     if (updateProps.id) return updateUtil(updateProps.id);
-  }
+  }*/
 
-  delete(deleteId: string) {
+  /*delete(deleteId: string) {
     const attempt = this.news[deleteId];
 
     if (!attempt) throw new BadRequestException('badId');
@@ -82,5 +76,5 @@ export class NewsService {
     delete this.news[deleteId];
 
     return attempt;
-  }
+  }*/
 }
