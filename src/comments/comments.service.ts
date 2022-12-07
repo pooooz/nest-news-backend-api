@@ -1,81 +1,59 @@
-import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 
-import { CommentsData } from './comments.interfaces';
 import { BadRequestException } from './comments.exceptions';
-import { CreateCommentDto, UpdateCommentDto } from './comments.dto';
+import { CreateCommentDto } from './comments.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CommentsEntity } from './comments.entity';
+import { NewsService } from '../news/news.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class CommentsService {
-  private readonly comments: CommentsData = {
-    1: [
-      {
-        id: '1',
-        author: 'Poz',
-        text: 'New comment',
-        avatar:
-          'https://i.pinimg.com/550x/83/d3/36/83d336bea6c487be42c146f095acc28f.jpg',
-      },
-    ],
-  };
+  constructor(
+    @InjectRepository(CommentsEntity)
+    private readonly commentsRepository: Repository<CommentsEntity>,
 
-  getById(newsId: string) {
-    const attempt = this.comments[newsId];
+    private readonly usersService: UsersService,
 
-    return attempt || [];
-  }
+    @Inject(forwardRef(() => NewsService))
+    private readonly newsService: NewsService,
+  ) {}
 
-  create(
-    newsId: string,
-    comment: CreateCommentDto,
-    avatar: string | undefined,
-  ) {
-    const attempt = this.comments[newsId];
+  async findByNewsId(newsId: number) {
+    const news = await this.newsService.findById(newsId);
 
-    if (!attempt) {
-      this.comments[newsId] = [];
+    if (!news) {
+      throw new BadRequestException('badNewsId');
     }
 
-    const avatarSrc =
-      avatar ||
-      'https://i.pinimg.com/550x/83/d3/36/83d336bea6c487be42c146f095acc28f.jpg';
-    const newCommentId = uuidv4();
-
-    const newComment = {
-      id: newCommentId,
-      avatar: avatarSrc,
-      ...comment,
-    };
-
-    this.comments[newsId].push(newComment);
-
-    return newComment;
+    return news.comments;
   }
 
-  delete(newsId: string, commentId: string) {
-    const attempt = this.comments[newsId];
-    if (!attempt) throw new BadRequestException('badNewsId');
+  async create(newsId: number, comment: CreateCommentDto) {
+    const newComment = new CommentsEntity();
+    newComment.text = comment.text;
 
-    const commentIdx = attempt.findIndex(({ id }) => id === commentId);
+    const news = await this.newsService.findById(newsId);
 
-    if (commentIdx < 0) throw new BadRequestException('badCommentId');
+    if (!news) {
+      throw new BadRequestException('badNewsId');
+    }
 
-    return this.comments[newsId].splice(commentIdx, 1);
+    newComment.news = news;
+
+    const user = await this.usersService.findByEmail(comment.authorEmail);
+
+    if (!user) {
+      throw new BadRequestException('badUserEmail');
+    }
+
+    newComment.user = user;
+
+    return this.commentsRepository.save(newComment);
   }
 
-  update(newsId: string, commentId: string, updateProps: UpdateCommentDto) {
-    const attempt = this.comments[newsId];
-
-    if (!attempt) throw new BadRequestException('badNewsId');
-
-    const commentIdx = attempt.findIndex(({ id }) => id === commentId);
-
-    if (commentIdx < 0) throw new BadRequestException('badCommentId');
-
-    const updated = { ...attempt[commentIdx], ...updateProps };
-
-    this.comments[newsId][commentIdx] = updated;
-
-    return updated;
+  async delete(commentId: number) {
+    return this.commentsRepository.delete(commentId);
   }
 }

@@ -19,25 +19,22 @@ import { NewsService } from './news.service';
 import { CreateNewsDto, UpdateNewsDto } from './news.dto';
 
 import { BadRequestResponse } from './news.responses';
-import { CommentsService } from '../comments/comments.service';
 import { FileLoadHelper } from '../utils/fileLoadHelper';
+import { BadRequestException } from './news.exception';
 
 @Controller('news')
 export class NewsController {
-  constructor(
-    private readonly newsService: NewsService,
-    private readonly commentsService: CommentsService,
-  ) {}
+  constructor(private readonly newsService: NewsService) {}
 
   @Get()
-  getAllNews() {
-    return this.newsService.getAll();
+  async getAllNews() {
+    return this.newsService.findAll();
   }
 
   @Get('/all')
   @Render('news-list')
-  getAllNewsView() {
-    const news = this.newsService.getAll();
+  async getAllNewsView() {
+    const news = await this.newsService.findAll();
 
     return {
       title: 'All news',
@@ -48,26 +45,30 @@ export class NewsController {
   @Get(':id/detail')
   @Render('news-detailed')
   @ApiResponse(BadRequestResponse)
-  getNewsViewById(@Param('id') id: string) {
-    const news = this.newsService.getById(id);
-    const comments = this.commentsService.getById(id);
+  async getNewsViewById(@Param('id') id: number) {
+    const news = await this.newsService.findById(id);
+
+    if (!news) {
+      throw new BadRequestException('badNewsId');
+    }
 
     return {
       title: news.title,
-      comments,
       news,
     };
   }
 
   @Get(':id')
   @ApiResponse(BadRequestResponse)
-  getNewsById(@Param('id') id: string) {
-    const news = this.newsService.getById(id);
-    const comments = this.commentsService.getById(id);
+  async getNewsById(@Param('id') id: number) {
+    const news = await this.newsService.findById(id);
+
+    if (!news) {
+      throw new BadRequestException('badNewsId');
+    }
 
     return {
       ...news,
-      comments,
     };
   }
 
@@ -89,13 +90,24 @@ export class NewsController {
       coverSrc = `/${cover.filename}`;
     }
 
+    if (!coverSrc) {
+      throw new BadRequestException('noCover');
+    }
+
     return this.newsService.create(newsItem, coverSrc);
   }
 
   @Patch(':id')
   @ApiResponse(BadRequestResponse)
-  updateNewsItemById(@Param('id') id: string, @Body() newsItem: UpdateNewsDto) {
-    return this.newsService.update(newsItem, id);
+  async updateNewsItemById(
+    @Param('id') id: string,
+    @Body() newsItem: UpdateNewsDto,
+  ) {
+    const result = await this.newsService.update(newsItem, id);
+    if (!result?.affected) {
+      throw new BadRequestException('badNewsId');
+    }
+    return !!result?.affected;
   }
 
   @Patch()
@@ -115,7 +127,11 @@ export class NewsController {
 
   @Delete(':id')
   @ApiResponse(BadRequestResponse)
-  deleteNewsById(@Param('id') id: string) {
-    return this.newsService.delete(id);
+  async deleteNewsById(@Param('id') id: number) {
+    const { affected } = await this.newsService.delete(id);
+    if (!affected) {
+      throw new BadRequestException('badNewsId');
+    }
+    return !!affected;
   }
 }
