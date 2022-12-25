@@ -11,6 +11,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { FileLoadHelper } from '../utils/fileLoadHelper';
 import { BadRequestException } from './users.exceptions';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
@@ -25,6 +26,7 @@ export class UsersController {
       }),
     }),
   )
+  @ApiTags('users')
   create(
     @Body() user: CrateUserDto,
     @UploadedFile() avatar: Express.Multer.File,

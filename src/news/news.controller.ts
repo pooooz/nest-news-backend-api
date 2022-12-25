@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Render } from '@nestjs/common';
 
 import { NewsService } from './news.service';
@@ -27,12 +27,14 @@ export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
   @Get()
+  @ApiTags('news')
   async getAllNews() {
     return this.newsService.findAll();
   }
 
   @Get('/all')
   @Render('news-list')
+  @ApiTags('news')
   async getAllNewsView() {
     const news = await this.newsService.findAll();
 
@@ -45,6 +47,7 @@ export class NewsController {
   @Get(':id/detail')
   @Render('news-detailed')
   @ApiResponse(BadRequestResponse)
+  @ApiTags('news')
   async getNewsViewById(@Param('id') id: number) {
     const news = await this.newsService.findById(id);
 
@@ -60,6 +63,7 @@ export class NewsController {
 
   @Get(':id')
   @ApiResponse(BadRequestResponse)
+  @ApiTags('news')
   async getNewsById(@Param('id') id: number) {
     const news = await this.newsService.findById(id);
 
@@ -81,6 +85,7 @@ export class NewsController {
       }),
     }),
   )
+  @ApiTags('news')
   createNewsItem(
     @Body() newsItem: CreateNewsDto,
     @UploadedFile() cover: Express.Multer.File,
@@ -99,6 +104,7 @@ export class NewsController {
 
   @Patch(':id')
   @ApiResponse(BadRequestResponse)
+  @ApiTags('news')
   async updateNewsItemById(
     @Param('id') id: string,
     @Body() newsItem: UpdateNewsDto,
@@ -112,6 +118,7 @@ export class NewsController {
 
   @Patch()
   @ApiResponse(BadRequestResponse)
+  @ApiTags('news')
   updateNewsItemByQueryParam(
     @Query('id') id: string,
     @Body() newsItem: UpdateNewsDto,
@@ -121,12 +128,14 @@ export class NewsController {
 
   @Patch()
   @ApiResponse(BadRequestResponse)
+  @ApiTags('news')
   updateNewsItem(@Param('id') id: string, @Body() newsItem: UpdateNewsDto) {
     return this.newsService.update(newsItem, id);
   }
 
   @Delete(':id')
   @ApiResponse(BadRequestResponse)
+  @ApiTags('news')
   async deleteNewsById(@Param('id') id: number) {
     const { affected } = await this.newsService.delete(id);
     if (!affected) {
