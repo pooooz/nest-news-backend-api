@@ -2,7 +2,7 @@ import { Controller, Get, Post, Param, Body, Delete } from '@nestjs/common';
 
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './comments.dto';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BadRequestResponse } from './comments.responses';
 import { BadRequestException } from './comments.exceptions';
 
@@ -12,11 +12,13 @@ export class CommentsController {
 
   @Get('/:newsId')
   @ApiResponse(BadRequestResponse)
+  @ApiTags('comments')
   getCommentsByNewsId(@Param('newsId') newsId: number) {
     return this.commentsService.findByNewsId(newsId);
   }
 
   @Post('/:newsId')
+  @ApiTags('comments')
   createComment(
     @Param('newsId') newsId: number,
     @Body() comment: CreateCommentDto,
@@ -26,6 +28,7 @@ export class CommentsController {
 
   @Delete('/:commentId')
   @ApiResponse(BadRequestResponse)
+  @ApiTags('comments')
   async deleteComment(@Param('commentId') commentId: number) {
     const { affected } = await this.commentsService.delete(commentId);
     if (!affected) {
